@@ -28,10 +28,9 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 .ct{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .tag{font-size:.58rem;padding:2px 7px;border-radius:99px;}
 .tag.green{background:#1a2a1a;border:1px solid #2d4a2d;color:#5a9a5a;}
-.tag.amber{background:#2a1e00;border:1px solid #5a3a00;color:#c8822a;}
 .tag.blue{background:#001a2a;border:1px solid #004a6a;color:#3a9aca;}
 .tag.live{background:#2a0d00;border:1px solid #8b3a00;color:#ff8c42;animation:pulse 2s infinite;}
-.tag.offline{background:#1a1a0a;border:1px solid #4a4a1a;color:#9a9a5a;}
+.tag.warn{background:#1a1200;border:1px solid #5a4000;color:#c8a040;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .btn-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
 .btn{background:var(--bvb);color:#000;border:none;padding:11px 36px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;border-radius:6px;cursor:pointer;transition:background .15s;}
@@ -56,8 +55,6 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 .form{display:flex;gap:3px;justify-content:center;}
 .fd{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .fd.W{background:#4caf50;}.fd.D{background:#888;}.fd.L{background:#e53935;}
-.xg-bar-wrap{background:var(--bg3);border-radius:3px;height:6px;flex:1;overflow:hidden;}
-.xg-bar{height:100%;border-radius:3px;}
 .rr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #111;}
 .rr:last-child{border-bottom:none;}
 .rn{flex:1;font-size:.84rem;}
@@ -70,15 +67,17 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 .note{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#444;line-height:1.8;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);}
 .formula{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#aaa;line-height:2;margin-top:8px;}
 .formula .hi{color:var(--bvb);}.formula .hi2{color:var(--blue);}.formula .hi3{color:#ca5a5a;}
+.src-badge{font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:2px 6px;border-radius:4px;background:#0a1a0a;border:1px solid #1a3a1a;color:#4a9a4a;}
 #loadOverlay{position:fixed;inset:0;background:rgba(8,8,8,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;}
 #loadOverlay.hidden{display:none;}
 .load-logo{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--bvb);letter-spacing:.1em;}
 .load-bar-wrap{width:260px;height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;}
 .load-bar{height:100%;background:linear-gradient(90deg,var(--bvb2),var(--bvb));width:0%;transition:width .4s;}
-.load-step{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--bvb);text-align:center;}
+.load-step{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--bvb);text-align:center;max-width:300px;}
 .load-sub{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);text-align:center;}
-.warn-box{background:#1a1500;border:1px solid #5a4500;border-radius:8px;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:#c8a040;max-width:380px;text-align:center;line-height:1.9;display:none;}
-.warn-box b{color:#ffd060;}
+.err-box{background:#1a0808;border:1px solid #5a1a1a;border-radius:8px;padding:14px 18px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#ca6060;max-width:360px;text-align:center;line-height:1.9;display:none;}
+.err-box b{color:#ff8080;}
+.err-box button{margin-top:10px;background:var(--bvb);color:#000;border:none;padding:6px 20px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:.95rem;cursor:pointer;}
 #compareRow{display:none;margin-bottom:14px;}
 .fix-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #111;font-family:'IBM Plex Mono',monospace;font-size:.7rem;}
 .fix-row:last-child{border-bottom:none;}
@@ -86,7 +85,6 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 .fix-score{width:40px;text-align:center;color:var(--muted);}
 .fix-away{flex:1;}
 .fix-row.bvb-match .fix-home,.fix-row.bvb-match .fix-away{color:var(--bvb);font-weight:600;}
-.src-badge{font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:2px 6px;border-radius:4px;background:#0a1a0a;border:1px solid #1a3a1a;color:#4a9a4a;}
 </style>
 </head>
 <body>
@@ -94,15 +92,18 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 <div id="loadOverlay">
   <div class="load-logo">BVB<span style="color:#fff">SIM</span></div>
   <div class="load-bar-wrap"><div class="load-bar" id="loadBar"></div></div>
-  <div class="load-step" id="loadStep">Verbinde…</div>
-  <div class="load-sub" id="loadSub">Lade Live-Daten</div>
-  <div class="warn-box" id="warnBox"></div>
+  <div class="load-step" id="loadStep">Starte…</div>
+  <div class="load-sub" id="loadSub">Bundesliga Live-Simulator</div>
+  <div class="err-box" id="errBox">
+    <div id="errMsg"></div>
+    <button onclick="location.reload()">↺ Neu laden</button>
+  </div>
 </div>
 
 <header>
   <div class="logo">BVB<span>SIM</span></div>
   <div class="hm">
-    Bundesliga 2025/26 · Monte-Carlo · 50.000 Durchläufe<br>
+    <span id="leagueLabel">Bundesliga</span> · Monte-Carlo · 50.000 Durchläufe<br>
     <b>Modell v2</b> · xG (Understat) · Heim/Auswärts · Formkurve<br>
     <b id="dataStatus">Lade…</b>
   </div>
@@ -118,7 +119,9 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 <div class="grid2">
   <div class="card">
     <div class="ct">
-      Aktuelle Tabelle <span class="tag live" id="mdTag">● Live</span>
+      Aktuelle Tabelle
+      <span class="tag live" id="mdTag">● Live</span>
+      <span class="tag blue" id="seasonTag">–</span>
       <button class="btn-reload" id="reloadBtn" onclick="reloadData()" disabled>↺ Aktualisieren</button>
     </div>
     <table class="tbl">
@@ -174,21 +177,20 @@ Tabelle + Form: <span class="src-badge">OpenLigaDB</span> · xG: <span class="sr
 // ════════════════════════════════════════════════════
 // KONFIGURATION
 // ════════════════════════════════════════════════════
-const LIGA='bl1', SAISON='2025', TOTAL_MD=34;
-const LEAGUE_AVG_XG=1.52, RHO=-0.13;
+const LIGA = 'bl1';
+const TOTAL_MD = 34;
+const LEAGUE_AVG_XG = 1.52;
+const RHO = -0.13;
+const UNDERSTAT_LIGA = 'Bundesliga';
 
-// CORS-Proxies
-const PROXIES=[
-  u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+const PROXIES = [
+  u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
 ];
-const OL_BASE='https://api.openligadb.de';
-
-// Understat Liga-Namen
-const UNDERSTAT_LIGA = 'Bundesliga'; // EPL, La_liga, Serie_A, Ligue_1, Bundesliga
+const OL_BASE = 'https://api.openligadb.de';
 
 // OpenLigaDB → Kürzel
-const N2A={
+const N2A = {
   "FC Bayern München":"BAY","Bayern München":"BAY","Bayern Munich":"BAY",
   "Borussia Dortmund":"BVB",
   "VfB Stuttgart":"VFB","Stuttgart":"VFB",
@@ -209,8 +211,8 @@ const N2A={
   "1. FC Heidenheim 1846":"FCH","Heidenheim":"FCH","FC Heidenheim":"FCH",
 };
 
-// Understat-Teamname → Kürzel
-const US2A={
+// Understat → Kürzel
+const US2A = {
   "Bayern Munich":"BAY","Borussia Dortmund":"BVB","VfB Stuttgart":"VFB",
   "RasenBallsport Leipzig":"RBL","Hoffenheim":"TSG","Bayer Leverkusen":"LEV",
   "Eintracht Frankfurt":"SGE","SC Freiburg":"SCF","Union Berlin":"UNI",
@@ -219,142 +221,93 @@ const US2A={
   "FC St. Pauli":"STP","VfL Wolfsburg":"WOB","Heidenheim":"FCH",
 };
 
-// ════════════════════════════════════════════════════
-// FALLBACK xG (falls Understat nicht erreichbar)
-// ════════════════════════════════════════════════════
-const XG_FB={
-  BAY:{h_f:2.55,a_f:2.11,h_a:0.97,a_a:1.17}, BVB:{h_f:1.82,a_f:1.65,h_a:1.05,a_a:1.28},
-  VFB:{h_f:1.65,a_f:1.72,h_a:1.05,a_a:1.52}, RBL:{h_f:1.79,a_f:1.58,h_a:1.22,a_a:1.41},
-  TSG:{h_f:1.87,a_f:1.58,h_a:1.35,a_a:1.42}, LEV:{h_f:1.72,a_f:1.55,h_a:1.18,a_a:1.38},
-  SGE:{h_f:1.55,a_f:1.68,h_a:1.42,a_a:1.75}, SCF:{h_f:1.55,a_f:1.28,h_a:1.30,a_a:1.72},
-  UNI:{h_f:1.32,a_f:1.25,h_a:1.52,a_a:1.62}, FCA:{h_f:1.38,a_f:1.22,h_a:1.55,a_a:1.78},
-  M05:{h_f:1.28,a_f:1.32,h_a:1.48,a_a:1.62}, HSV:{h_f:1.42,a_f:1.18,h_a:1.48,a_a:1.62},
-  BMG:{h_f:1.32,a_f:1.22,h_a:1.58,a_a:1.65}, SVW:{h_f:1.25,a_f:1.18,h_a:1.65,a_a:1.81},
-  KOE:{h_f:1.45,a_f:1.22,h_a:1.58,a_a:1.72}, STP:{h_f:1.21,a_f:1.21,h_a:1.58,a_a:1.75},
-  WOB:{h_f:1.35,a_f:1.06,h_a:1.75,a_a:1.82}, FCH:{h_f:1.28,a_f:0.98,h_a:1.77,a_a:1.72},
-};
-
-// ════════════════════════════════════════════════════
-// FALLBACK Tabelle (MD 27)
-// ════════════════════════════════════════════════════
-const FB={
-  pMD:27,nMD:28,
-  teams:[
-    {abbr:"BAY",name:"Bayern München",pts:70,played:27,goalDiff:72,goals:97,form:"WWWWWW"},
-    {abbr:"BVB",name:"Borussia Dortmund",pts:61,played:27,goalDiff:30,goals:58,form:"DLWWWW"},
-    {abbr:"VFB",name:"VfB Stuttgart",pts:53,played:27,goalDiff:20,goals:56,form:"WDWDWW"},
-    {abbr:"RBL",name:"RB Leipzig",pts:50,played:27,goalDiff:18,goals:53,form:"WLDDWW"},
-    {abbr:"TSG",name:"TSG Hoffenheim",pts:50,played:27,goalDiff:15,goals:54,form:"WDLWDL"},
-    {abbr:"LEV",name:"Bayer 04 Leverkusen",pts:46,played:27,goalDiff:16,goals:52,form:"LDWDDD"},
-    {abbr:"SGE",name:"Eintracht Frankfurt",pts:38,played:27,goalDiff:-1,goals:50,form:"LWDWDL"},
-    {abbr:"SCF",name:"SC Freiburg",pts:37,played:27,goalDiff:-5,goals:39,form:"WLDLLW"},
-    {abbr:"UNI",name:"1. FC Union Berlin",pts:31,played:27,goalDiff:-15,goals:31,form:"LLWDLL"},
-    {abbr:"FCA",name:"FC Augsburg",pts:31,played:27,goalDiff:-17,goals:33,form:"LWWWLL"},
-    {abbr:"M05",name:"FSV Mainz 05",pts:30,played:27,goalDiff:-9,goals:33,form:"DDWLDW"},
-    {abbr:"HSV",name:"Hamburger SV",pts:30,played:27,goalDiff:-9,goals:31,form:"LLWDDL"},
-    {abbr:"BMG",name:"Borussia M'gladbach",pts:29,played:27,goalDiff:-13,goals:33,form:"LWLWLD"},
-    {abbr:"SVW",name:"Werder Bremen",pts:28,played:27,goalDiff:-17,goals:30,form:"LLLWWW"},
-    {abbr:"KOE",name:"1. FC Köln",pts:26,played:27,goalDiff:-9,goals:38,form:"LDLLDD"},
-    {abbr:"STP",name:"FC St. Pauli",pts:24,played:27,goalDiff:-20,goals:24,form:"WDLWLL"},
-    {abbr:"WOB",name:"VfL Wolfsburg",pts:21,played:27,goalDiff:-22,goals:35,form:"DLLLLL"},
-    {abbr:"FCH",name:"1. FC Heidenheim",pts:15,played:27,goalDiff:-34,goals:27,form:"LDLLLD"},
-  ],
-  fixtures:[
-    {md:28,h:"LEV",a:"WOB"},{md:28,h:"SCF",a:"BAY"},{md:28,h:"SVW",a:"RBL"},
-    {md:28,h:"VFB",a:"BVB"},{md:28,h:"BMG",a:"FCH"},{md:28,h:"UNI",a:"STP"},
-    {md:28,h:"TSG",a:"M05"},{md:28,h:"HSV",a:"FCA"},{md:28,h:"SGE",a:"KOE"},
-    {md:29,h:"STP",a:"BAY"},{md:29,h:"BVB",a:"LEV"},{md:29,h:"WOB",a:"SGE"},
-    {md:29,h:"M05",a:"SCF"},{md:29,h:"KOE",a:"SVW"},{md:29,h:"RBL",a:"BMG"},
-    {md:29,h:"FCH",a:"UNI"},{md:29,h:"FCA",a:"TSG"},{md:29,h:"VFB",a:"HSV"},
-    {md:30,h:"TSG",a:"BVB"},{md:30,h:"BMG",a:"M05"},{md:30,h:"SGE",a:"RBL"},
-    {md:30,h:"BAY",a:"VFB"},{md:30,h:"UNI",a:"WOB"},{md:30,h:"LEV",a:"FCA"},
-    {md:30,h:"SCF",a:"FCH"},{md:30,h:"STP",a:"KOE"},{md:30,h:"SVW",a:"HSV"},
-    {md:31,h:"M05",a:"BAY"},{md:31,h:"KOE",a:"LEV"},{md:31,h:"FCA",a:"SGE"},
-    {md:31,h:"BVB",a:"SCF"},{md:31,h:"VFB",a:"SVW"},{md:31,h:"WOB",a:"BMG"},
-    {md:31,h:"RBL",a:"UNI"},{md:31,h:"FCH",a:"STP"},{md:31,h:"HSV",a:"TSG"},
-    {md:32,h:"BMG",a:"BVB"},{md:32,h:"STP",a:"M05"},{md:32,h:"LEV",a:"RBL"},
-    {md:32,h:"TSG",a:"VFB"},{md:32,h:"SCF",a:"WOB"},{md:32,h:"SVW",a:"FCA"},
-    {md:32,h:"BAY",a:"FCH"},{md:32,h:"UNI",a:"KOE"},{md:32,h:"SGE",a:"HSV"},
-    {md:33,h:"WOB",a:"BAY"},{md:33,h:"VFB",a:"LEV"},{md:33,h:"BVB",a:"SGE"},
-    {md:33,h:"HSV",a:"SCF"},{md:33,h:"TSG",a:"SVW"},{md:33,h:"FCA",a:"BMG"},
-    {md:33,h:"M05",a:"UNI"},{md:33,h:"RBL",a:"STP"},{md:33,h:"KOE",a:"FCH"},
-    {md:34,h:"SVW",a:"BVB"},{md:34,h:"FCH",a:"M05"},{md:34,h:"SCF",a:"RBL"},
-    {md:34,h:"SGE",a:"VFB"},{md:34,h:"STP",a:"WOB"},{md:34,h:"UNI",a:"FCA"},
-    {md:34,h:"BMG",a:"TSG"},{md:34,h:"BAY",a:"KOE"},{md:34,h:"LEV",a:"HSV"},
-  ]
-};
-
 // App-State
-let TEAMS=[], FIXTURES=[], PLAYED_MD=0, NEXT_MD=0, SRC="live", XG_SRC="understat";
+let TEAMS=[], FIXTURES=[], PLAYED_MD=0, NEXT_MD=0, SAISON='', XG_SRC='';
 
 // ════════════════════════════════════════════════════
-// HILFSFUNKTIONEN
+// SAISON AUTOMATISCH ERKENNEN
 // ════════════════════════════════════════════════════
-function sl(pct,step,sub){
-  document.getElementById("loadBar").style.width=pct+"%";
-  document.getElementById("loadStep").textContent=step;
-  if(sub!==undefined) document.getElementById("loadSub").textContent=sub;
+async function detectSeason() {
+  // OpenLigaDB liefert die aktuelle Gruppe – daraus leiten wir die Saison ab
+  // Alternativ: verfügbare Saisons abfragen
+  try {
+    const available = await olFetch(`/getavailablegroups/${LIGA}`);
+    if (available && available.length > 0) {
+      // Neueste Saison = höchste groupOrderID im aktuellen Jahr
+      // OpenLigaDB Saisons sind Startjahre: 2024 = Saison 2024/25
+      const years = available
+        .map(g => parseInt(g.groupName?.match(/\d{4}/)?.[0]))
+        .filter(y => !isNaN(y));
+      const maxYear = Math.max(...years);
+      // Prüfe ob diese Saison noch aktiv ist (Spieltag < 34)
+      const curGroup = await olFetch(`/getcurrentgroup/${LIGA}`);
+      if (curGroup.groupOrderID <= TOTAL_MD) {
+        return String(maxYear);
+      }
+      // Saison beendet → nächste Saison
+      return String(maxYear + 1);
+    }
+  } catch(e) {}
+
+  // Fallback: aus aktuellem Datum ableiten
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const year = now.getFullYear();
+  // Bundesliga startet im August → Saison = aktuelles Jahr
+  // Januar–Juli → Saison = Vorjahr
+  return String(month >= 8 ? year : year - 1);
 }
 
-async function proxyFetch(url, asText=false){
-  for(const makeProxy of PROXIES){
-    try{
-      const r=await fetch(makeProxy(url),{signal:AbortSignal.timeout(8000)});
-      if(!r.ok) continue;
+// ════════════════════════════════════════════════════
+// API-FETCH
+// ════════════════════════════════════════════════════
+function sl(pct, step, sub) {
+  document.getElementById("loadBar").style.width = pct + "%";
+  document.getElementById("loadStep").textContent = step;
+  if (sub !== undefined) document.getElementById("loadSub").textContent = sub;
+}
+
+async function proxyFetch(url, asText=false) {
+  for (const makeProxy of PROXIES) {
+    try {
+      const r = await fetch(makeProxy(url), {signal: AbortSignal.timeout(9000)});
+      if (!r.ok) continue;
       return asText ? await r.text() : await r.json();
-    }catch(e){}
+    } catch(e) {}
   }
-  throw new Error("Proxy nicht erreichbar");
+  throw new Error("Nicht erreichbar: " + url.slice(0,50));
 }
 
-async function olFetch(path){
-  return proxyFetch(OL_BASE+path);
+async function olFetch(path) {
+  return proxyFetch(OL_BASE + path);
 }
 
 // ════════════════════════════════════════════════════
-// UNDERSTAT xG LADEN
-// Understat bettet JSON als JS-Variable ins HTML ein:
-// var teamsData = JSON.parse('...')
+// UNDERSTAT xG
 // ════════════════════════════════════════════════════
-async function fetchUnderstatXG(){
-  const url=`https://understat.com/league/${UNDERSTAT_LIGA}`;
+async function fetchUnderstatXG() {
+  const url = `https://understat.com/league/${UNDERSTAT_LIGA}`;
   const html = await proxyFetch(url, true);
-
-  // Extrahiere teamsData JSON aus HTML
   const match = html.match(/teamsData\s*=\s*JSON\.parse\('(.+?)'\)/);
-  if(!match) throw new Error("teamsData nicht gefunden");
-
-  // Understat escaped den JSON-String mit \x-Notation
+  if (!match) throw new Error("teamsData nicht gefunden");
   const jsonStr = match[1].replace(/\\x([0-9A-Fa-f]{2})/g,
-    (_,h)=>String.fromCharCode(parseInt(h,16)));
+    (_, h) => String.fromCharCode(parseInt(h, 16)));
   const data = JSON.parse(jsonStr);
 
-  // Verarbeite in xG-Map: abbr → {h_f, a_f, h_a, a_a}
   const xgMap = {};
-  for(const [,team] of Object.entries(data)){
+  for (const [, team] of Object.entries(data)) {
     const abbr = US2A[team.title];
-    if(!abbr) continue;
-
-    // Sammle Heim- und Auswärts-xG aus allen Spielen
-    let hxgFor=0,hxgAga=0,hGames=0;
-    let axgFor=0,axgAga=0,aGames=0;
-
-    for(const [,match] of Object.entries(team.history||{})){
-      const xgF=parseFloat(match.xG)||0;
-      const xgA=parseFloat(match.xGA)||0;
-      if(match.h_a==="h"){
-        hxgFor+=xgF; hxgAga+=xgA; hGames++;
-      } else {
-        axgFor+=xgF; axgAga+=xgA; aGames++;
-      }
+    if (!abbr) continue;
+    let hxgF=0,hxgA=0,hN=0, axgF=0,axgA=0,aN=0;
+    for (const [, m] of Object.entries(team.history || {})) {
+      const xgF = parseFloat(m.xG)||0, xgA = parseFloat(m.xGA)||0;
+      if (m.h_a === "h") { hxgF+=xgF; hxgA+=xgA; hN++; }
+      else               { axgF+=xgF; axgA+=xgA; aN++; }
     }
-
-    if(hGames>0 && aGames>0){
-      xgMap[abbr]={
-        h_f: hxgFor/hGames,
-        a_f: axgFor/aGames,
-        h_a: hxgAga/hGames,
-        a_a: axgAga/aGames,
+    if (hN > 0 && aN > 0) {
+      xgMap[abbr] = {
+        h_f: hxgF/hN, a_f: axgF/aN,
+        h_a: hxgA/hN, a_a: axgA/aN,
       };
     }
   }
@@ -364,157 +317,174 @@ async function fetchUnderstatXG(){
 // ════════════════════════════════════════════════════
 // HAUPTLADE-LOGIK
 // ════════════════════════════════════════════════════
-async function loadData(){
-  try{
-    sl(5,"Ermittle aktuellen Spieltag…");
-    const grp=await olFetch(`/getcurrentgroup/${LIGA}`);
-    const curMD=grp.groupOrderID;
-    NEXT_MD=curMD; PLAYED_MD=Math.max(1,curMD-1);
+async function loadData() {
+  try {
+    // 1. Saison automatisch erkennen
+    sl(5, "Erkenne aktuelle Saison…");
+    SAISON = await detectSeason();
+    const saisonLabel = `${SAISON}/${String(parseInt(SAISON)+1).slice(2)}`;
+    document.getElementById("seasonTag").textContent = `Saison ${saisonLabel}`;
+    document.getElementById("leagueLabel").textContent = `Bundesliga ${saisonLabel}`;
 
-    sl(15,`Lade Tabelle (MD ${PLAYED_MD})…`);
-    const tbl=await olFetch(`/getbltable/${LIGA}/${SAISON}`);
+    // 2. Aktueller Spieltag
+    sl(10, `Saison ${saisonLabel} erkannt · Lade Spieltag…`);
+    const grp = await olFetch(`/getcurrentgroup/${LIGA}`);
+    const curMD = grp.groupOrderID;
+    NEXT_MD = curMD;
+    PLAYED_MD = Math.max(1, curMD - 1);
 
-    // Formkurve letzte 5 MD
-    const formMap={};
-    const fStart=Math.max(1,PLAYED_MD-4);
-    for(let md=fStart;md<=PLAYED_MD;md++){
-      sl(15+(md-fStart)*8,`Formkurve MD ${md}…`);
-      try{
-        const ms=await olFetch(`/getmatchdata/${LIGA}/${SAISON}/${md}`);
-        for(const m of ms){
-          if(!m.matchIsFinished) continue;
-          const res=m.matchResults?.find(r=>r.resultTypeID===2);
-          if(!res) continue;
-          const hg=res.pointsTeam1,ag=res.pointsTeam2;
-          const ha=N2A[m.team1?.teamName],aa=N2A[m.team2?.teamName];
-          if(!ha||!aa) continue;
+    // 3. Tabelle
+    sl(18, `Lade Tabelle (MD ${PLAYED_MD})…`);
+    const tbl = await olFetch(`/getbltable/${LIGA}/${SAISON}`);
+
+    // 4. Formkurve letzte 5 MD
+    const formMap = {};
+    const fStart = Math.max(1, PLAYED_MD - 4);
+    for (let md = fStart; md <= PLAYED_MD; md++) {
+      sl(18 + (md - fStart) * 8, `Formkurve MD ${md}…`);
+      try {
+        const ms = await olFetch(`/getmatchdata/${LIGA}/${SAISON}/${md}`);
+        for (const m of ms) {
+          if (!m.matchIsFinished) continue;
+          const res = m.matchResults?.find(r => r.resultTypeID === 2);
+          if (!res) continue;
+          const hg=res.pointsTeam1, ag=res.pointsTeam2;
+          const ha=N2A[m.team1?.teamName], aa=N2A[m.team2?.teamName];
+          if (!ha||!aa) continue;
           (formMap[ha]=formMap[ha]||[]).push(hg>ag?'W':hg<ag?'L':'D');
           (formMap[aa]=formMap[aa]||[]).push(ag>hg?'W':ag<hg?'L':'D');
         }
-      }catch(e){}
+      } catch(e) {}
     }
 
-    // Restspielplan
-    sl(55,`Lade Restspielplan…`);
-    const remaining=[];
-    for(let md=NEXT_MD;md<=TOTAL_MD;md++){
-      try{
-        const ms=await olFetch(`/getmatchdata/${LIGA}/${SAISON}/${md}`);
-        for(const m of ms){
-          if(m.matchIsFinished) continue;
-          const h=N2A[m.team1?.teamName],a=N2A[m.team2?.teamName];
-          if(h&&a) remaining.push({md,h,a});
+    // 5. Restspielplan
+    sl(58, `Lade Restspielplan (MD ${NEXT_MD}–${TOTAL_MD})…`);
+    FIXTURES = [];
+    for (let md = NEXT_MD; md <= TOTAL_MD; md++) {
+      try {
+        const ms = await olFetch(`/getmatchdata/${LIGA}/${SAISON}/${md}`);
+        for (const m of ms) {
+          if (m.matchIsFinished) continue;
+          const h=N2A[m.team1?.teamName], a=N2A[m.team2?.teamName];
+          if (h&&a) FIXTURES.push({md, h, a});
         }
-      }catch(e){}
-    }
-    FIXTURES=remaining.length>0?remaining:FB.fixtures.filter(f=>f.md>=NEXT_MD);
-
-    // xG von Understat laden
-    sl(70,"Lade xG-Daten von Understat…");
-    let xgData={};
-    try{
-      xgData=await fetchUnderstatXG();
-      XG_SRC="understat";
-      sl(85,"xG-Daten geladen ✓");
-    }catch(e){
-      console.warn("Understat nicht erreichbar:",e.message);
-      xgData=XG_FB;
-      XG_SRC="fallback";
+      } catch(e) {}
     }
 
-    sl(90,"Verarbeite Teams…");
+    // 6. xG von Understat
+    sl(72, "Lade xG-Daten von Understat…");
+    let xgData = {};
+    try {
+      xgData = await fetchUnderstatXG();
+      XG_SRC = "understat";
+      sl(88, "xG-Daten geladen ✓");
+    } catch(e) {
+      console.warn("Understat:", e.message);
+      // Keine Fallback-Daten mehr – xG aus Tordaten schätzen
+      XG_SRC = "estimated";
+    }
 
-    TEAMS=tbl.map(t=>{
-      const abbr=N2A[t.teamName]||t.teamName.slice(0,3).toUpperCase();
+    // 7. Teams aufbauen
+    sl(92, "Verarbeite Teams…");
+    TEAMS = tbl.map(t => {
+      const abbr = N2A[t.teamName] || t.teamName.slice(0,3).toUpperCase();
       const played=t.matches, pts=t.points;
-      const ppg=played>0?pts/played:1.5;
-      const xg=xgData[abbr]||XG_FB[abbr]||{h_f:1.4,a_f:1.3,h_a:1.5,a_a:1.6};
-      const fa=formMap[abbr]||[];
-      const fbT=FB.teams.find(x=>x.abbr===abbr);
-      const form=fa.length>=3?fa.slice(-6).join(""):(fbT?.form||"DDDDDD");
-      return{
-        name:t.teamName, abbr, pts, played,
-        goalDiff:t.goalDiff, goals:t.goals, form,
-        homePPG:Math.max(0.3,ppg*1.12), awayPPG:Math.max(0.2,ppg*0.88),
-        xGFor_H:Math.max(0.5,xg.h_f), xGFor_A:Math.max(0.4,xg.a_f),
-        xGA_H:Math.max(0.5,xg.h_a),   xGA_A:Math.max(0.5,xg.a_a),
+      const ppg = played > 0 ? pts/played : 1.5;
+      const hp = Math.max(1, played/2);
+
+      let xgFor_H, xgFor_A, xGA_H, xGA_A;
+      if (xgData[abbr]) {
+        // Echte Understat-Daten
+        xgFor_H = Math.max(0.5, xgData[abbr].h_f);
+        xgFor_A = Math.max(0.4, xgData[abbr].a_f);
+        xGA_H   = Math.max(0.5, xgData[abbr].h_a);
+        xGA_A   = Math.max(0.5, xgData[abbr].a_a);
+      } else {
+        // Schätze xG aus Tordaten (Notfall wenn Understat komplett down)
+        const goalsPerGame = t.goals / Math.max(1, played);
+        const concededPerGame = t.opponentGoals / Math.max(1, played);
+        xgFor_H = Math.max(0.5, goalsPerGame * 1.1);
+        xgFor_A = Math.max(0.4, goalsPerGame * 0.9);
+        xGA_H   = Math.max(0.5, concededPerGame * 0.9);
+        xGA_A   = Math.max(0.5, concededPerGame * 1.1);
+      }
+
+      const fa = formMap[abbr] || [];
+      const form = fa.length >= 3 ? fa.slice(-6).join("") : "DDDDDD";
+
+      return {
+        name: t.teamName, abbr, pts, played,
+        goalDiff: t.goalDiff, goals: t.goals, form,
+        homePPG: Math.max(0.3, ppg*1.12),
+        awayPPG: Math.max(0.2, ppg*0.88),
+        xGFor_H, xGFor_A, xGA_H, xGA_A,
       };
     });
 
-    SRC="live";
     finish();
-  }catch(err){
-    console.warn("Live fehlgeschlagen:",err.message);
-    loadFallback(err.message);
+
+  } catch(err) {
+    console.error(err);
+    showError(err.message);
   }
 }
 
-function loadFallback(msg){
-  SRC="fallback"; XG_SRC="fallback";
-  PLAYED_MD=FB.pMD; NEXT_MD=FB.nMD;
-  TEAMS=FB.teams.map(t=>{
-    const xg=XG_FB[t.abbr]||{h_f:1.4,a_f:1.3,h_a:1.5,a_a:1.6};
-    const ppg=t.pts/t.played;
-    return{...t,homePPG:ppg*1.12,awayPPG:ppg*0.88,
-      xGFor_H:xg.h_f,xGFor_A:xg.a_f,xGA_H:xg.h_a,xGA_A:xg.a_a};
-  });
-  FIXTURES=FB.fixtures;
-  const wb=document.getElementById("warnBox");
-  wb.innerHTML=`<b>⚠ Offline-Modus</b><br>Verwende gespeicherte Daten (MD ${FB.pMD}).<br>
-    <span style="opacity:.6;font-size:.58rem">${(msg||"").slice(0,80)}</span>`;
-  wb.style.display="block";
-  setTimeout(finish,1200);
+function showError(msg) {
+  const eb = document.getElementById("errBox");
+  document.getElementById("errMsg").innerHTML =
+    `<b>⚠ Fehler beim Laden</b><br>${msg}<br><br>Bitte Internetverbindung prüfen.`;
+  eb.style.display = "block";
+  document.getElementById("loadStep").style.display = "none";
+  document.getElementById("loadBar").parentElement.style.display = "none";
 }
 
-function finish(){
-  sl(100,"Fertig!");
+function finish() {
+  sl(100, "Fertig!");
   precompute();
   renderHeader();
   renderStandings();
   renderNextFixtures();
-  document.getElementById("simBtn").disabled=false;
-  document.getElementById("reloadBtn").disabled=false;
-  setTimeout(()=>document.getElementById("loadOverlay").classList.add("hidden"),400);
+  document.getElementById("simBtn").disabled = false;
+  document.getElementById("reloadBtn").disabled = false;
+  setTimeout(() => document.getElementById("loadOverlay").classList.add("hidden"), 400);
 }
 
-async function reloadData(){
-  document.getElementById("reloadBtn").disabled=true;
-  document.getElementById("simBtn").disabled=true;
-  document.getElementById("resSection").style.display="none";
-  document.getElementById("sResult").textContent="–";
+async function reloadData() {
+  document.getElementById("reloadBtn").disabled = true;
+  document.getElementById("simBtn").disabled = true;
+  document.getElementById("resSection").style.display = "none";
+  document.getElementById("sResult").textContent = "–";
   document.getElementById("loadOverlay").classList.remove("hidden");
-  document.getElementById("warnBox").style.display="none";
-  document.getElementById("loadBar").style.width="0%";
+  document.getElementById("errBox").style.display = "none";
+  document.getElementById("loadBar").style.width = "0%";
+  document.getElementById("loadStep").style.display = "block";
+  document.getElementById("loadBar").parentElement.style.display = "block";
   await loadData();
 }
 
 // ════════════════════════════════════════════════════
 // RENDER
 // ════════════════════════════════════════════════════
-function renderHeader(){
-  const bvb=TEAMS.find(t=>t.abbr==="BVB");
-  const rank=bvb?TEAMS.findIndex(t=>t.abbr==="BVB")+1:"?";
-  document.getElementById("sBVBpts").textContent=bvb?.pts??"–";
-  document.getElementById("sBVBrank").textContent=rank+".";
-  document.getElementById("sBVBgames").textContent=bvb?TOTAL_MD-bvb.played:"?";
-  const xgLabel=XG_SRC==="understat"?"xG: Understat ✓":"xG: Fallback";
-  const srcLabel=SRC==="live"?"OpenLigaDB":"Fallback MD "+FB.pMD;
-  document.getElementById("dataStatus").textContent=
-    `MD ${PLAYED_MD} · ${new Date().toLocaleDateString("de-DE")} · ${srcLabel} · ${xgLabel}`;
-  const isLive=SRC==="live";
-  document.getElementById("mdTag").textContent=isLive?`● MD ${PLAYED_MD} live`:`⚠ MD ${PLAYED_MD} offline`;
-  document.getElementById("mdTag").className="tag "+(isLive?"live":"offline");
-  document.getElementById("nextMdTag").textContent=`MD ${NEXT_MD}`;
+function renderHeader() {
+  const bvb = TEAMS.find(t => t.abbr === "BVB");
+  const rank = bvb ? TEAMS.findIndex(t => t.abbr === "BVB") + 1 : "?";
+  document.getElementById("sBVBpts").textContent   = bvb?.pts ?? "–";
+  document.getElementById("sBVBrank").textContent  = rank + ".";
+  document.getElementById("sBVBgames").textContent = bvb ? TOTAL_MD - bvb.played : "?";
+  const xgLbl = XG_SRC==="understat" ? "Understat ✓" : XG_SRC==="estimated" ? "Tordaten (geschätzt)" : "–";
+  document.getElementById("dataStatus").textContent =
+    `MD ${PLAYED_MD} · ${new Date().toLocaleDateString("de-DE")} · OpenLigaDB · xG: ${xgLbl}`;
+  document.getElementById("mdTag").textContent = `● MD ${PLAYED_MD} live`;
+  document.getElementById("nextMdTag").textContent = `MD ${NEXT_MD}`;
 }
 
-function formDots(str){
-  return[...(str||"").toUpperCase()].filter(c=>"WDL".includes(c)).slice(-6)
+function formDots(str) {
+  return [...(str||"").toUpperCase()].filter(c=>"WDL".includes(c)).slice(-6)
     .map(c=>`<div class="fd ${c}"></div>`).join("");
 }
 
-function renderStandings(){
-  const maxXG=Math.max(...TEAMS.map(t=>t.xGFor_H));
-  document.getElementById("standingsTbl").innerHTML=TEAMS.map((t,i)=>`
+function renderStandings() {
+  document.getElementById("standingsTbl").innerHTML = TEAMS.map((t,i) => `
     <tr class="${t.abbr==="BVB"?"bvb":""}">
       <td>${i+1}</td>
       <td class="l">${t.name}</td>
@@ -526,13 +496,18 @@ function renderStandings(){
     </tr>`).join("");
 }
 
-function renderNextFixtures(){
-  const fs=FIXTURES.filter(f=>f.md===NEXT_MD);
-  if(!fs.length){document.getElementById("nextFixtures").textContent=`Keine offenen Spiele MD ${NEXT_MD}`;return;}
-  document.getElementById("nextFixtures").innerHTML=fs.map(f=>{
-    const bvb=f.h==="BVB"||f.a==="BVB";
-    return`<div class="fix-row ${bvb?"bvb-match":""}">
-      <div class="fix-home">${f.h}</div><div class="fix-score">vs</div><div class="fix-away">${f.a}</div>
+function renderNextFixtures() {
+  const fs = FIXTURES.filter(f => f.md === NEXT_MD);
+  if (!fs.length) {
+    document.getElementById("nextFixtures").textContent = `Keine offenen Spiele MD ${NEXT_MD}`;
+    return;
+  }
+  document.getElementById("nextFixtures").innerHTML = fs.map(f => {
+    const bvb = f.h==="BVB"||f.a==="BVB";
+    return `<div class="fix-row ${bvb?"bvb-match":""}">
+      <div class="fix-home">${f.h}</div>
+      <div class="fix-score">vs</div>
+      <div class="fix-away">${f.a}</div>
     </div>`;
   }).join("");
 }
@@ -540,48 +515,50 @@ function renderNextFixtures(){
 // ════════════════════════════════════════════════════
 // SIMULATION
 // ════════════════════════════════════════════════════
-let ATK_H={},ATK_A={},DEF_H={},DEF_A={},FD=[],V1D=[];
+let ATK_H={}, ATK_A={}, DEF_H={}, DEF_A={}, FD=[], V1D=[];
 
-function fs(str){
-  let p=0,n=0;
-  for(const c of(str||"").toUpperCase()){
+function fscore(str) {
+  let p=0, n=0;
+  for (const c of (str||"").toUpperCase()) {
     if(c==='W'){p+=3;n++;}else if(c==='D'){p+=1;n++;}else if(c==='L')n++;
   }
-  return n>0?p/(n*3):0.5;
+  return n>0 ? p/(n*3) : 0.5;
 }
 
-function precompute(){
+function precompute() {
   ATK_H={}; ATK_A={}; DEF_H={}; DEF_A={};
-  TEAMS.forEach(t=>{
-    const f=fs(t.form);
-    ATK_H[t.abbr]=(t.xGFor_H/LEAGUE_AVG_XG)*.5+(t.homePPG/1.5)*.3+f*.2;
-    ATK_A[t.abbr]=(t.xGFor_A/LEAGUE_AVG_XG)*.5+(t.awayPPG/1.5)*.3+f*.2;
-    DEF_H[t.abbr]=LEAGUE_AVG_XG/t.xGA_H;
-    DEF_A[t.abbr]=LEAGUE_AVG_XG/t.xGA_A;
+  TEAMS.forEach(t => {
+    const f = fscore(t.form);
+    ATK_H[t.abbr] = (t.xGFor_H/LEAGUE_AVG_XG)*.5 + (t.homePPG/1.5)*.3 + f*.2;
+    ATK_A[t.abbr] = (t.xGFor_A/LEAGUE_AVG_XG)*.5 + (t.awayPPG/1.5)*.3 + f*.2;
+    DEF_H[t.abbr] = LEAGUE_AVG_XG / t.xGA_H;
+    DEF_A[t.abbr] = LEAGUE_AVG_XG / t.xGA_A;
   });
-  FD=FIXTURES.map(f=>({
-    mu1:(ATK_H[f.h]||1)*(DEF_A[f.a]||1)*LEAGUE_AVG_XG,
-    mu2:(ATK_A[f.a]||1)*(DEF_H[f.h]||1)*LEAGUE_AVG_XG
+  FD = FIXTURES.map(f => ({
+    mu1: (ATK_H[f.h]||1) * (DEF_A[f.a]||1) * LEAGUE_AVG_XG,
+    mu2: (ATK_A[f.a]||1) * (DEF_H[f.h]||1) * LEAGUE_AVG_XG,
   }));
-  V1D=FIXTURES.map(f=>{
-    const ht=TEAMS.find(t=>t.abbr===f.h),at=TEAMS.find(t=>t.abbr===f.a);
+  V1D = FIXTURES.map(f => {
+    const ht=TEAMS.find(t=>t.abbr===f.h), at=TEAMS.find(t=>t.abbr===f.a);
     const pH=ht&&ht.played>0?ht.pts/ht.played:1.5;
     const pA=at&&at.played>0?at.pts/at.played:1.2;
-    const sh=pH*1.12,diff=Math.abs(pH-pA);
+    const sh=pH*1.12, diff=Math.abs(pH-pA);
     const d=Math.max(.17,.27-diff*.035);
-    return{hw:Math.max(.05,(sh/(sh+pA))*(1-d)),d};
+    return {hw:Math.max(.05,(sh/(sh+pA))*(1-d)), d};
   });
 }
 
-function pois(l){
+function pois(l) {
   const L=Math.exp(-Math.min(l,15));
-  let k=0,p=1;do{k++;p*=Math.random();}while(p>L);return k-1;
+  let k=0,p=1;
+  do{k++;p*=Math.random();}while(p>L);
+  return k-1;
 }
 
-function simM(fd){
-  let h=pois(fd.mu1),a=pois(fd.mu2);
+function simM(fd) {
+  let h=pois(fd.mu1), a=pois(fd.mu2);
   if(h<=1&&a<=1){
-    let c=h===0&&a===0?1-fd.mu1*fd.mu2*RHO:h===0&&a===1?1+fd.mu1*RHO:h===1&&a===0?1+fd.mu2*RHO:1-RHO;
+    const c=h===0&&a===0?1-fd.mu1*fd.mu2*RHO:h===0&&a===1?1+fd.mu1*RHO:h===1&&a===0?1+fd.mu2*RHO:1-RHO;
     if(Math.random()>c){h=pois(fd.mu1);a=pois(fd.mu2);}
   }
   return h>a?3:h===a?1:0;
@@ -589,12 +566,12 @@ function simM(fd){
 
 function simV1(fd){const r=Math.random();return r<fd.hw?3:r<fd.hw+fd.d?1:0;}
 
-function simSeason(v2){
-  const pts={},gd={};
-  TEAMS.forEach(t=>{pts[t.abbr]=t.pts;gd[t.abbr]=t.goalDiff||0;});
-  const data=v2?FD:V1D,fn=v2?simM:simV1;
+function simSeason(v2) {
+  const pts={}, gd={};
+  TEAMS.forEach(t=>{pts[t.abbr]=t.pts; gd[t.abbr]=t.goalDiff||0;});
+  const data=v2?FD:V1D, fn=v2?simM:simV1;
   for(let i=0;i<data.length;i++){
-    const f=FIXTURES[i],r=fn(data[i]);
+    const f=FIXTURES[i], r=fn(data[i]);
     if(r===3){pts[f.h]+=3;gd[f.h]++;}
     else if(r===1){pts[f.h]++;pts[f.a]++;}
     else{pts[f.a]+=3;gd[f.a]++;}
@@ -603,16 +580,19 @@ function simSeason(v2){
     .sort((a,b)=>b.p-a.p||b.g-a.g).map(x=>x.ab);
 }
 
-const N=50000,CHUNK=2000;
+const N=50000, CHUNK=2000;
 
-function startSim(){
+function startSim() {
   document.getElementById("simBtn").disabled=true;
   document.getElementById("pbWrap").style.display="block";
   document.getElementById("resSection").style.display="none";
   document.getElementById("pb").style.width="0%";
-  const v2={},v1={};
-  TEAMS.forEach(t=>{v2[t.abbr]=new Int32Array(TEAMS.length);v1[t.abbr]=new Int32Array(TEAMS.length);});
-  let done=0;const t0=performance.now();
+  const v2={}, v1={};
+  TEAMS.forEach(t=>{
+    v2[t.abbr]=new Int32Array(TEAMS.length);
+    v1[t.abbr]=new Int32Array(TEAMS.length);
+  });
+  let done=0; const t0=performance.now();
   (function run(){
     const end=Math.min(done+CHUNK,N);
     for(let i=done;i<end;i++){
@@ -621,7 +601,8 @@ function startSim(){
     }
     done=end;
     document.getElementById("pb").style.width=(done/N*100)+"%";
-    document.getElementById("prog").textContent=`Simuliere… ${done.toLocaleString("de")} / ${N.toLocaleString("de")}`;
+    document.getElementById("prog").textContent=
+      `Simuliere… ${done.toLocaleString("de")} / ${N.toLocaleString("de")}`;
     if(done<N){setTimeout(run,0);return;}
     showResults(v2,v1,N,((performance.now()-t0)/1000).toFixed(2));
   })();
@@ -635,9 +616,10 @@ function showResults(v2,v1,N,ms){
   document.getElementById("prog").textContent=`✓ ${N.toLocaleString("de")} Sim in ${ms}s`;
 
   document.getElementById("resBars").innerHTML=[...TEAMS].sort((a,b)=>b.pts-a.pts).slice(0,6).map(t=>{
-    const val=pct(v2[t.abbr]?.[1]??0,N),isBVB=t.abbr==="BVB";
+    const val=pct(v2[t.abbr]?.[1]??0,N), isBVB=t.abbr==="BVB";
     return`<div class="rr">
-      <div class="rn ${isBVB?"bvb":""}">${t.name}</div><div class="rp">${t.pts}</div>
+      <div class="rn ${isBVB?"bvb":""}">${t.name}</div>
+      <div class="rp">${t.pts}</div>
       <div class="rb-w"><div class="rb" style="width:${Math.min(+val,100)}%;background:${isBVB?"linear-gradient(90deg,var(--bvb2),var(--bvb))":"linear-gradient(90deg,#1e1e1e,#3a3a3a)"}">
         ${+val>10?val+"%":""}</div></div>
       <div class="rv ${isBVB?"bvb":""}">${val}%</div>
@@ -647,24 +629,27 @@ function showResults(v2,v1,N,ms){
   document.getElementById("resTbl").innerHTML=TEAMS.map((t,i)=>{
     const r=v2[t.abbr]||new Int32Array(TEAMS.length);
     const top4=r[0]+r[1]+r[2]+r[3];
-    let avg=0;for(let k=0;k<Math.min(TEAMS.length,TP.length);k++)avg+=r[k]*TP[k];
+    let avg=0;
+    for(let k=0;k<Math.min(TEAMS.length,TP.length);k++) avg+=r[k]*TP[k];
     return`<tr class="${t.abbr==="BVB"?"bvb":""}">
-      <td>${i+1}</td><td class="l">${t.name}</td><td>${t.pts}</td><td>${(avg/N).toFixed(1)}</td>
+      <td>${i+1}</td><td class="l">${t.name}</td>
+      <td>${t.pts}</td><td>${(avg/N).toFixed(1)}</td>
       <td>${pct(r[0],N)}%</td><td><b>${pct(r[1],N)}%</b></td><td>${pct(top4,N)}%</td>
     </tr>`;
   }).join("");
 
   const nv1=Math.floor(N/5);
   document.getElementById("compareTbl").innerHTML=TEAMS.slice(0,8).map((t,i)=>{
-    const v1v=pct(v1[t.abbr]?.[1]??0,nv1),v2v=pct(v2[t.abbr]?.[1]??0,N);
+    const v1v=pct(v1[t.abbr]?.[1]??0,nv1), v2v=pct(v2[t.abbr]?.[1]??0,N);
     const d=(+v2v-+v1v).toFixed(1);
     return`<tr class="${t.abbr==="BVB"?"bvb":""}">
-      <td>${i+1}</td><td class="l">${t.name}</td><td>${v1v}%</td><td>${v2v}%</td>
+      <td>${i+1}</td><td class="l">${t.name}</td>
+      <td>${v1v}%</td><td>${v2v}%</td>
       <td style="color:${+d>0?'var(--green)':+d<0?'var(--red)':'var(--muted)'}">${+d>0?"+":""}${d}</td>
     </tr>`;
   }).join("");
 
-  const xgLbl=XG_SRC==="understat"?"Understat xG":"Fallback xG";
+  const xgLbl = XG_SRC==="understat"?"Understat xG":XG_SRC==="estimated"?"xG geschätzt":"xG";
   document.getElementById("noteEl").textContent=
     `${ms}s · ${N.toLocaleString("de")} Sim · OpenLigaDB + ${xgLbl} · ${new Date().toLocaleDateString("de-DE")}`;
   document.getElementById("resSection").style.display="grid";
