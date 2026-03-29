@@ -607,8 +607,9 @@ function simSeason(v2) {
     else if(r===1){pts[f.h]++;pts[f.a]++;}
     else{pts[f.a]+=3;gd[f.a]++;}
   }
+  // Gibt sortierte Liste + finale Punkte zurück
   return TEAMS.map(t=>({ab:t.abbr,p:pts[t.abbr],g:gd[t.abbr]}))
-    .sort((a,b)=>b.p-a.p||b.g-a.g).map(x=>x.ab);
+    .sort((a,b)=>b.p-a.p||b.g-a.g);
 }
 
 const N=50000, CHUNK=2000;
@@ -619,30 +620,42 @@ function startSim() {
   document.getElementById("resSection").style.display="none";
   document.getElementById("pb").style.width="0%";
   const v2={}, v1={};
+  const pts2={}, pts1={}; // Punkte-Summen für Ø-Berechnung
   TEAMS.forEach(t=>{
     v2[t.abbr]=new Int32Array(TEAMS.length);
     v1[t.abbr]=new Int32Array(TEAMS.length);
+    pts2[t.abbr]=0;
+    pts1[t.abbr]=0;
   });
   let done=0; const t0=performance.now();
   (function run(){
     const end=Math.min(done+CHUNK,N);
     for(let i=done;i<end;i++){
-      simSeason(true).forEach((ab,idx)=>{if(v2[ab])v2[ab][idx]++;});
-      if(i%5===0) simSeason(false).forEach((ab,idx)=>{if(v1[ab])v1[ab][idx]++;});
+      const r2=simSeason(true);
+      r2.forEach((x,idx)=>{
+        if(v2[x.ab]) v2[x.ab][idx]++;
+        pts2[x.ab]=(pts2[x.ab]||0)+x.p;
+      });
+      if(i%5===0){
+        const r1=simSeason(false);
+        r1.forEach((x,idx)=>{
+          if(v1[x.ab]) v1[x.ab][idx]++;
+          pts1[x.ab]=(pts1[x.ab]||0)+x.p;
+        });
+      }
     }
     done=end;
     document.getElementById("pb").style.width=(done/N*100)+"%";
     document.getElementById("prog").textContent=
       `Simuliere… ${done.toLocaleString("de")} / ${N.toLocaleString("de")}`;
     if(done<N){setTimeout(run,0);return;}
-    showResults(v2,v1,N,((performance.now()-t0)/1000).toFixed(2));
+    showResults(v2,v1,pts2,N,((performance.now()-t0)/1000).toFixed(2));
   })();
 }
 
 function pct(n,N){return(n/N*100).toFixed(1);}
-const TP=[74,65,58,53,48,44,40,37,34,31,29,27,25,23,21,19,16,12];
 
-function showResults(v2,v1,N,ms){
+function showResults(v2,v1,pts2,N,ms){
   document.getElementById("sResult").textContent=pct(v2.BVB?.[1]??0,N)+"%";
   document.getElementById("prog").textContent=`✓ ${N.toLocaleString("de")} Sim in ${ms}s`;
 
@@ -660,11 +673,10 @@ function showResults(v2,v1,N,ms){
   document.getElementById("resTbl").innerHTML=TEAMS.map((t,i)=>{
     const r=v2[t.abbr]||new Int32Array(TEAMS.length);
     const top4=r[0]+r[1]+r[2]+r[3];
-    let avg=0;
-    for(let k=0;k<Math.min(TEAMS.length,TP.length);k++) avg+=r[k]*TP[k];
+    const avgPts=(pts2[t.abbr]/N).toFixed(1);
     return`<tr class="${t.abbr==="BVB"?"bvb":""}">
       <td>${i+1}</td><td class="l">${t.name}</td>
-      <td>${t.pts}</td><td>${(avg/N).toFixed(1)}</td>
+      <td>${t.pts}</td><td>${avgPts}</td>
       <td>${pct(r[0],N)}%</td><td><b>${pct(r[1],N)}%</b></td><td>${pct(top4,N)}%</td>
     </tr>`;
   }).join("");
