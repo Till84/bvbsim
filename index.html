@@ -68,6 +68,14 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 .formula{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#aaa;line-height:2;margin-top:8px;}
 .formula .hi{color:var(--bvb);}.formula .hi2{color:var(--blue);}.formula .hi3{color:#ca5a5a;}
 .src-badge{font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:2px 6px;border-radius:4px;background:#0a1a0a;border:1px solid #1a3a1a;color:#4a9a4a;}
+.info-block{display:flex;flex-direction:column;gap:10px;}
+.info-title{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);}
+.info-section{display:flex;flex-direction:column;gap:4px;}
+.info-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
+.info-row{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:#aaa;line-height:1.7;display:flex;align-items:center;gap:6px;}
+.hi-sm{color:var(--bvb);font-weight:600;min-width:60px;}
+.hi2-sm{color:var(--blue);font-weight:600;min-width:60px;}
+.hi3-sm{color:#ca5a5a;font-weight:600;min-width:60px;}
 #loadOverlay{position:fixed;inset:0;background:rgba(8,8,8,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;}
 #loadOverlay.hidden{display:none;}
 .load-logo{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--bvb);letter-spacing:.1em;}
@@ -132,25 +140,52 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
   <div class="card blue">
     <div class="ct">Nächster Spieltag <span class="tag blue" id="nextMdTag">MD ?</span></div>
     <div id="nextFixtures" style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.7rem;padding:8px 0">Lade…</div>
-    <div class="formula" style="margin-top:10px">
-<span class="hi">Angriffsst.</span> = xGFor × 0.5 + PPG × 0.3 + Form × 0.2<br>
-<span class="hi2">Defensivst.</span> = LigaØ / xGAgainst<br>
-<span class="hi3">λ</span> = Atk × Def × LigaØ → <span class="hi">Poisson</span> + <span class="hi2">Dixon-Coles</span><br>
-Tabelle + Form: <span class="src-badge">OpenLigaDB</span> · xG: <span class="src-badge">Understat</span>
+
+    <!-- Modell-Info -->
+    <div class="info-block" style="margin-top:14px">
+      <div class="info-title">Wie funktioniert die Simulation?</div>
+
+      <div class="info-section">
+        <div class="info-label">Datenquellen</div>
+        <div class="info-row"><span class="src-badge">OpenLigaDB</span> Tabelle, Spielplan, Ergebnisse</div>
+        <div class="info-row"><span class="src-badge">Understat</span> Expected Goals (xG) pro Spiel</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-label">Teamstärke (Modell v2)</div>
+        <div class="info-row"><span class="hi-sm">Angriff</span> = xG × 50% + Punkte/Sp × 30% + Form × 20%</div>
+        <div class="info-row"><span class="hi2-sm">Abwehr</span> = Liga-Ø ÷ xG-Gegentore</div>
+        <div class="info-row"><span class="hi3-sm">Heim/Auswärts</span> wird separat berechnet</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-label">Spielsimulation</div>
+        <div class="info-row"><span class="hi-sm">Poisson</span> erzeugt Tore basierend auf Teamstärke</div>
+        <div class="info-row"><span class="hi2-sm">Dixon-Coles</span> korrigiert knappe Ergebnisse (0:0, 1:0 …)</div>
+        <div class="info-row"><span class="hi3-sm">50.000×</span> komplette Saison-Simulationen</div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-label">Form</div>
+        <div class="info-row">Letzte 6 Spiele · <span style="color:var(--green)">●W</span> = Sieg &nbsp;<span style="color:#888">●D</span> = Unentschieden &nbsp;<span style="color:var(--red)">●L</span> = Niederlage</div>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="btn-row">
   <button class="btn" id="simBtn" onclick="startSim()" disabled>▶ SIMULATION STARTEN</button>
-  <button class="btn-s" onclick="toggleCompare()">⇄ v1 vs v2 vergleichen</button>
+  <button class="btn-s" onclick="toggleCompare()">⇄ Modell v1 vs v2</button>
 </div>
 <div class="pb-wrap" id="pbWrap"><div class="pb" id="pb"></div></div>
 <div class="prog" id="prog"></div>
 
 <div id="compareRow">
-  <div class="card">
-    <div class="ct">Modellvergleich: v1 (PPG) vs v2 (xG+Form+Heim/Ausw)</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct">Modellvergleich <span class="tag blue">v1 nur Punkte/Sp · v2 xG+Form+Heim/Ausw</span></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:10px;line-height:1.8">
+      v1 = einfaches Modell (nur Punkte pro Spiel) &nbsp;·&nbsp; v2 = erweitertes Modell mit xG, Formkurve und Heim/Auswärts-Trennung
+    </div>
     <table class="tbl">
       <tr><th>#</th><th class="l">Verein</th><th>v1 P2%</th><th>v2 P2%</th><th>Δ</th></tr>
       <tbody id="compareTbl"></tbody>
@@ -161,10 +196,16 @@ Tabelle + Form: <span class="src-badge">OpenLigaDB</span> · xG: <span class="sr
 <div class="grid2" id="resSection" style="display:none">
   <div class="card hl">
     <div class="ct">Platz-2-Wahrscheinlichkeit <span class="tag blue">50.000 Sim · Modell v2</span></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:10px">
+      Wie oft landete jedes Team in 50.000 simulierten Saisons auf Platz 2?
+    </div>
     <div id="resBars"></div>
   </div>
   <div class="card">
     <div class="ct">Simulierte Endtabelle</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:10px;line-height:1.7">
+      Ø End = durchschnittliche Endpunktzahl &nbsp;·&nbsp; P1/P2 = Meister/Vize-Chance &nbsp;·&nbsp; Top4 = Champions-League-Chance
+    </div>
     <table class="tbl">
       <tr><th>#</th><th class="l">Verein</th><th>Pkt</th><th>Ø End</th><th>P1</th><th>P2</th><th>Top4</th></tr>
       <tbody id="resTbl"></tbody>
@@ -337,9 +378,9 @@ async function loadData() {
     sl(18, `Lade Tabelle (MD ${PLAYED_MD})…`);
     const tbl = await olFetch(`/getbltable/${LIGA}/${SAISON}`);
 
-    // 4. Formkurve letzte 5 MD
+    // 4. Formkurve letzte 6 MD
     const formMap = {};
-    const fStart = Math.max(1, PLAYED_MD - 4);
+    const fStart = Math.max(1, PLAYED_MD - 5);
     for (let md = fStart; md <= PLAYED_MD; md++) {
       sl(18 + (md - fStart) * 8, `Formkurve MD ${md}…`);
       try {
