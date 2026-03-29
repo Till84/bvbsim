@@ -390,24 +390,14 @@ async function loadData() {
       const abbr = N2A[t.teamName] || t.teamName.slice(0,3).toUpperCase();
       const played=t.matches, pts=t.points;
       const ppg = played > 0 ? pts/played : 1.5;
-      const hp = Math.max(1, played/2);
 
-      let xgFor_H, xgFor_A, xGA_H, xGA_A;
-      if (xgData[abbr]) {
-        // Echte Understat-Daten
-        xgFor_H = Math.max(0.5, xgData[abbr].h_f);
-        xgFor_A = Math.max(0.4, xgData[abbr].a_f);
-        xGA_H   = Math.max(0.5, xgData[abbr].h_a);
-        xGA_A   = Math.max(0.5, xgData[abbr].a_a);
-      } else {
-        // Schätze xG aus Tordaten (Notfall wenn Understat komplett down)
-        const goalsPerGame = t.goals / Math.max(1, played);
-        const concededPerGame = t.opponentGoals / Math.max(1, played);
-        xgFor_H = Math.max(0.5, goalsPerGame * 1.1);
-        xgFor_A = Math.max(0.4, goalsPerGame * 0.9);
-        xGA_H   = Math.max(0.5, concededPerGame * 0.9);
-        xGA_A   = Math.max(0.5, concededPerGame * 1.1);
-      }
+      const goalsPerGame = t.goals / Math.max(1, played);
+      const concededPerGame = t.opponentGoals / Math.max(1, played);
+      const uxg = xgData[abbr] || null;
+      const xGFor_H = uxg ? Math.max(0.5, uxg.h_f) : Math.max(0.5, goalsPerGame * 1.1);
+      const xGFor_A = uxg ? Math.max(0.4, uxg.a_f) : Math.max(0.4, goalsPerGame * 0.9);
+      const xGA_H   = uxg ? Math.max(0.5, uxg.h_a) : Math.max(0.5, concededPerGame * 0.9);
+      const xGA_A   = uxg ? Math.max(0.5, uxg.a_a) : Math.max(0.5, concededPerGame * 1.1);
 
       const fa = formMap[abbr] || [];
       const form = fa.length >= 3 ? fa.slice(-6).join("") : "DDDDDD";
@@ -417,7 +407,7 @@ async function loadData() {
         goalDiff: t.goalDiff, goals: t.goals, form,
         homePPG: Math.max(0.3, ppg*1.12),
         awayPPG: Math.max(0.2, ppg*0.88),
-        xGFor_H, xGFor_A, xGA_H, xGA_A,
+        xGFor_H: xGFor_H, xGFor_A: xGFor_A, xGA_H: xGA_H, xGA_A: xGA_A,
       };
     });
 
