@@ -424,14 +424,69 @@ async function loadData() {
       } catch(e) {}
     }
 
-    // Sanity-Check: Jedes Team sollte ähnlich viele Restspiele haben
-    // Wenn ein Team 0 Fixtures hat → Warnung in Konsole
+    // ── Nachholspiele (Smart-Variante) ──────────────────────
+    // Zähle wie viele Spiele jedes Team in FIXTURES hat
+    // PLUS wie viele es laut Tabelle bereits gespielt hat.
+    // Ein Team sollte am Ende TOTAL_MD Spiele haben.
+    // Falls gespielt + restSpiele < TOTAL_MD → fehlen Spiele
+    // → scanne Spieltage 1..NEXT_MD-1 nach offenen Spielen dieses Teams
     const fixCount = {};
     FIXTURES.forEach(f => {
       fixCount[f.h] = (fixCount[f.h]||0) + 1;
       fixCount[f.a] = (fixCount[f.a]||0) + 1;
     });
-    console.log("Restspiele pro Team:", fixCount);
+
+    // Teams mit Nachholspiel-Rückstand ermitteln
+    const teamsNeedingCatchup = tbl
+      .map(t => ({ abbr: N2A[t.teamName], played: t.matches }))
+      .filter(t => t.abbr && (t.played + (fixCount[t.abbr]||0)) < TOTAL_MD);
+
+    if (teamsNeedingCatchup.length > 0) {
+      console.log("Teams mit Rückstand (mögliche Nachholspiele):",
+        teamsNeedingCatchup.map(t => `${t.abbr}(gespielt:${t.played})`));
+
+      // Betroffene Spieltage: 1 bis NEXT_MD-1 (können Nachholspiele enthalten)
+      // Lade nur Spieltage, die wir noch nicht geladen haben
+      const catchupMDs = new Set();
+      for (let md = 1; md < NEXT_MD; md++) catchupMDs.add(md);
+
+      const abbrSet = new Set(teamsNeedingCatchup.map(t => t.abbr));
+
+      for (const md of catchupMDs) {
+        try {
+          sl(65, `Suche Nachholspiele in MD ${md}…`);
+          const ms = await olGet(`/getmatchdata/${LIGA}/${SAISON}/${md}`);
+          for (const m of ms) {
+            if (m.matchIsFinished) continue; // bereits gespielt
+            const h = N2A[m.team1?.teamName];
+            const a = N2A[m.team2?.teamName];
+            if (!h || !a) continue;
+            // Nur aufnehmen wenn mindestens ein betroffenes Team dabei ist
+            if (abbrSet.has(h) || abbrSet.has(a)) {
+              // Noch nicht doppelt eintragen (Sicherheitscheck)
+              const exists = FIXTURES.some(f => f.md === md && f.h === h && f.a === a);
+              if (!exists) {
+                FIXTURES.push({ md, h, a, isPostponed: true });
+                console.log(`Nachholspiel gefunden: MD${md} ${h} vs ${a}`);
+              }
+            }
+          }
+        } catch(e) {}
+      }
+    }
+
+    // Fixtures chronologisch sortieren (wichtig für korrekte Simulation)
+    FIXTURES.sort((a, b) => a.md - b.md);
+
+    // Endkontrolle
+    const fixCountFinal = {};
+    FIXTURES.forEach(f => {
+      fixCountFinal[f.h] = (fixCountFinal[f.h]||0) + 1;
+      fixCountFinal[f.a] = (fixCountFinal[f.a]||0) + 1;
+    });
+    console.log("Restspiele pro Team (inkl. Nachholspiele):", fixCountFinal);
+    const postponedCount = FIXTURES.filter(f => f.isPostponed).length;
+    if (postponedCount > 0) console.log(`${postponedCount} Nachholspiel(e) gefunden und eingetragen.`);
 
     // 6. xG von Understat
     sl(78, "Lade xG-Daten von Understat…");
@@ -526,8 +581,10 @@ function renderHeader() {
   document.getElementById("mdTag").textContent     = `● MD ${PLAYED_MD} ✓`;
   document.getElementById("nextMdTag").textContent = `MD ${NEXT_MD}`;
   const xgLbl = XG_SRC === "understat" ? "Understat xG ✓" : "xG geschätzt";
+  const ppCount = FIXTURES.filter(f => f.isPostponed).length;
+  const ppInfo  = ppCount > 0 ? ` · ${ppCount} Nachholspiel${ppCount>1?"e":""}` : "";
   document.getElementById("dataStatus").textContent =
-    `MD ${PLAYED_MD} abgeschlossen · ${new Date().toLocaleDateString("de-DE")} · ${xgLbl}`;
+    `MD ${PLAYED_MD} abgeschlossen · ${new Date().toLocaleDateString("de-DE")} · ${xgLbl}${ppInfo}`;
 }
 
 function formDots(str) {
@@ -562,6 +619,19 @@ function renderFixtures() {
       <div class="fix-away">${f.a}</div>
     </div>`;
   }).join("");
+
+  // Zeige Nachholspiele (nicht in NEXT_MD) separat
+  const pp = FIXTURES.filter(f => f.isPostponed);
+  if (pp.length > 0) {
+    document.getElementById("nextFixtures").innerHTML +=
+      `<div style="margin-top:10px;padding-top:8px;border-top:1px solid #1a1a1a;font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#886622;letter-spacing:.06em">` +
+      `▲ NACHHOLSPIELE (${pp.length}) ` +
+      pp.map(f => {
+        const bvb = f.h === "BVB" || f.a === "BVB";
+        return `<span style="color:${bvb?"var(--bvb)":"#aaa"}">${f.h}–${f.a} MD${f.md}</span>`;
+      }).join(" · ") +
+      `</div>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════
