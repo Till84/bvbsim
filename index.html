@@ -118,7 +118,7 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
   <div class="stat"><div class="val" id="sBVBpts">–</div><div class="lbl">BVB Punkte</div></div>
   <div class="stat"><div class="val" id="sBVBrank">–</div><div class="lbl">BVB Platz</div></div>
   <div class="stat"><div class="val" id="sBVBgames">–</div><div class="lbl">BVB Restspiele</div></div>
-  <div class="stat"><div class="val" id="sResult">–</div><div class="lbl">Platz-2-Chance</div></div>
+  <div class="stat"><div class="val" id="sResult" style="font-size:1.3rem;line-height:1.2">–</div><div class="lbl" id="sResultLbl">Wahrsch. Platz</div></div>
 </div>
 
 <div class="grid2">
@@ -192,19 +192,27 @@ header{display:flex;align-items:flex-end;gap:14px;margin-bottom:22px;padding-bot
 
 <div class="grid2" id="resSection" style="display:none">
   <div class="card hl">
-    <div class="ct">Platz-2-Wahrscheinlichkeit <span class="tag blue">50.000 Sim · Modell v2</span></div>
+    <div class="ct">Wahrscheinlichster Platz <span class="tag blue">50.000 Sim · Modell v2</span></div>
     <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:10px">
-      Wie oft landete jedes Team in 50.000 simulierten Saisons auf Platz 2?
+      Balken = Chance auf den <b style="color:#bbb">wahrscheinlichsten Platz</b> des jeweiligen Teams
     </div>
     <div id="resBars"></div>
   </div>
   <div class="card">
     <div class="ct">Simulierte Endtabelle</div>
     <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:10px;line-height:1.7">
-      Pkt = aktuell · Ø End = simulierter Endstand · P1/P2 = Meister/Vizemeister · Top4 = Champions League
+      Pkt = aktuell · Ø End = simulierter Endstand · Qualifikationen automatisch ermittelt
     </div>
     <table class="tbl">
-      <tr><th>#</th><th class="l">Verein</th><th>Pkt</th><th>Ø End</th><th>P1</th><th>P2</th><th>Top4</th></tr>
+      <tr>
+        <th>#</th><th class="l">Verein</th><th>Pkt</th><th>Ø End</th>
+        <th title="Meister">🏆</th>
+        <th title="Champions League" id="thCL">CL</th>
+        <th title="Europa League" id="thEL">EL</th>
+        <th title="Conference League Quali" id="thECL">ECL</th>
+        <th title="Relegationsplatz" id="thREL">Rel</th>
+        <th title="Abstieg" id="thABS">▼</th>
+      </tr>
       <tbody id="resTbl"></tbody>
     </table>
     <div class="note" id="noteEl"></div>
@@ -793,6 +801,30 @@ function startSim() {
 }
 
 // ═══════════════════════════════════════════════════════
+// QUALIFIKATIONSPLÄTZE – dynamisch aus Ligagröße
+// Aktuell Bundesliga: 4×CL, 1×EL, 1×ECL-Quali, 1×Relegation, 2×Abstieg
+// Diese Funktion erlaubt einfache Anpassung falls UEFA die Quoten ändert
+// ═══════════════════════════════════════════════════════
+function getQualSlots(n) {
+  // n = Anzahl Teams in der Liga
+  // Gibt zurück: { cl: [0-based Indizes], el: [...], ecl: [...], rel: [...], abs: [...] }
+  // Bundesliga-Standard: 4 CL, 1 EL, 1 ECL, 1 Relegation, 2 Abstieg
+  const clSlots  = n >= 18 ? 4 : n >= 16 ? 3 : 2;   // falls Deutschland mal weniger CL-Plätze bekommt → hier anpassen
+  const elSlots  = 1;
+  const eclSlots = 1;
+  const absSlots = n >= 18 ? 2 : 1;
+  const relSlots = 1;
+
+  const cl  = Array.from({length: clSlots},  (_, i) => i);               // Platz 1..clSlots
+  const el  = Array.from({length: elSlots},  (_, i) => clSlots + i);     // Platz clSlots+1
+  const ecl = Array.from({length: eclSlots}, (_, i) => clSlots + elSlots + i);
+  const abs = Array.from({length: absSlots}, (_, i) => n - absSlots + i); // letzte 2
+  const rel = Array.from({length: relSlots}, (_, i) => n - absSlots - relSlots + i); // Platz n-2
+
+  return { cl, el, ecl, rel, abs };
+}
+
+// ═══════════════════════════════════════════════════════
 // ERGEBNISSE ANZEIGEN
 // ═══════════════════════════════════════════════════════
 function pct(count, total) {
@@ -800,22 +832,73 @@ function pct(count, total) {
 }
 
 function showResults(rc, rv1, ptsSum, ms) {
-  // BVB P2 in der Stats-Row
-  const bvbP2 = pct(rc.BVB?.[1] ?? 0, N);
-  document.getElementById("sResult").textContent = bvbP2 + "%";
+  const n = TEAMS.length;
+  const slots = getQualSlots(n);
+
+  // Spaltenheader mit konkreten Platzzahlen aktualisieren
+  const clMax  = slots.cl[slots.cl.length - 1] + 1;
+  const elMax  = slots.el[slots.el.length - 1] + 1;
+  const eclMax = slots.ecl[slots.ecl.length - 1] + 1;
+  const relPl  = slots.rel[0] + 1;
+  const absPl  = slots.abs[0] + 1;
+  document.getElementById("thCL").title  = `Champions League (Platz 1–${clMax})`;
+  document.getElementById("thCL").textContent  = `CL`;
+  document.getElementById("thEL").title  = `Europa League (Platz ${clMax+1}–${elMax})`;
+  document.getElementById("thECL").title = `Conference League Quali (Platz ${elMax+1}–${eclMax})`;
+  document.getElementById("thREL").title = `Relegation (Platz ${relPl})`;
+  document.getElementById("thABS").title = `Direktabstieg (Platz ${absPl}–${n})`;
+
+  // Hilfsfunktion: Summe über mehrere Rang-Indizes
+  function sumSlots(abbr, idxArr) {
+    const r = rc[abbr] || new Int32Array(n);
+    return idxArr.reduce((s, i) => s + (r[i] || 0), 0);
+  }
+
+  // Wahrscheinlichster Platz für BVB (0-basiert → +1 für Anzeige)
+  const bvbR = rc["BVB"] || new Int32Array(n);
+  let bvbBestRank = 0;
+  for (let i = 1; i < n; i++) {
+    if ((bvbR[i]||0) > (bvbR[bvbBestRank]||0)) bvbBestRank = i;
+  }
+  const bvbBestPct = pct(bvbR[bvbBestRank] || 0, N);
+  // Qualifikation für diesen Platz bestimmen
+  function qualLabel(idx) {
+    if (slots.cl.includes(idx))  return "Champions League";
+    if (slots.el.includes(idx))  return "Europa League";
+    if (slots.ecl.includes(idx)) return "Conference League";
+    if (slots.rel.includes(idx)) return "Relegation";
+    if (slots.abs.includes(idx)) return "Abstieg";
+    return "";
+  }
+  const bvbQual = qualLabel(bvbBestRank);
+  document.getElementById("sResult").textContent  = `Platz ${bvbBestRank+1} · ${bvbBestPct}%`;
+  document.getElementById("sResultLbl").textContent = bvbQual ? `Wahrsch. Platz · ${bvbQual}` : "Wahrsch. Endplatz";
+
   document.getElementById("prog").textContent = `✓ ${N.toLocaleString("de")} Simulationen in ${ms}s`;
 
-  // Balken-Chart: Top 6 Teams nach aktuellen Punkten
-  const top6 = [...TEAMS].sort((a,b) => b.pts - a.pts).slice(0, 6);
-  document.getElementById("resBars").innerHTML = top6.map(t => {
-    const val   = pct(rc[t.abbr]?.[1] ?? 0, N);
-    const isBVB = t.abbr === "BVB";
-    const bg    = isBVB
+  // Balken-Chart: Top-Teams (alle die CL-Chancen haben + BVB) nach aktuellen Punkten
+  const topN = Math.min(8, n);
+  const topTeams = [...TEAMS].sort((a,b) => b.pts - a.pts).slice(0, topN);
+  document.getElementById("resBars").innerHTML = topTeams.map(t => {
+    const r = rc[t.abbr] || new Int32Array(n);
+    // Wahrscheinlichster Platz dieses Teams
+    let bestRank = 0;
+    for (let i = 1; i < n; i++) {
+      if ((r[i]||0) > (r[bestRank]||0)) bestRank = i;
+    }
+    const val    = pct(r[bestRank] || 0, N);
+    const isBVB  = t.abbr === "BVB";
+    const bg     = isBVB
       ? "linear-gradient(90deg,var(--bvb2),var(--bvb))"
       : "linear-gradient(90deg,#1e1e1e,#3a3a3a)";
+    const ql = qualLabel(bestRank);
+    const qlColor = slots.cl.includes(bestRank) ? "var(--blue)" :
+                    slots.el.includes(bestRank) ? "var(--green)" :
+                    slots.ecl.includes(bestRank) ? "#7a9a6a" :
+                    slots.rel.includes(bestRank) || slots.abs.includes(bestRank) ? "var(--red)" : "var(--muted)";
     return `<div class="rr">
       <div class="rn ${isBVB?"bvb":""}">${t.name}</div>
-      <div class="rp">${t.pts}</div>
+      <div class="rp" style="color:${qlColor};font-size:.62rem" title="${ql}">P${bestRank+1}</div>
       <div class="rb-w">
         <div class="rb" style="width:${Math.min(+val,100)}%;background:${bg}">
           ${+val > 12 ? val+"%" : ""}
@@ -825,40 +908,64 @@ function showResults(rc, rv1, ptsSum, ms) {
     </div>`;
   }).join("");
 
-  // Endtabelle
+  // Endtabelle mit allen Qualifikationsspalten
   document.getElementById("resTbl").innerHTML = TEAMS.map((t, i) => {
-    const r    = rc[t.abbr] || new Int32Array(TEAMS.length);
-    const top4 = r[0] + r[1] + r[2] + r[3];
-    const avg  = (ptsSum[t.abbr] / N).toFixed(1); // Echter Ø-Endpunktestand
-    return `<tr class="${t.abbr==="BVB"?"bvb":""}">
+    const avg    = (ptsSum[t.abbr] / N).toFixed(1);
+    const clPct  = pct(sumSlots(t.abbr, slots.cl),  N);
+    const elPct  = pct(sumSlots(t.abbr, slots.el),  N);
+    const eclPct = pct(sumSlots(t.abbr, slots.ecl), N);
+    const relPct = pct(sumSlots(t.abbr, slots.rel), N);
+    const absPct = pct(sumSlots(t.abbr, slots.abs), N);
+    const p1Pct  = pct((rc[t.abbr]||new Int32Array(n))[0] || 0, N);
+
+    // Zeilenfarbe: BVB gelb, sonst Qualifikationszone
+    const isBVB = t.abbr === "BVB";
+    // Spaltenfarben: grün=gut, rot=schlecht, gedimmt=irrelevant
+    const dim = v => +v < 0.5 ? `color:var(--muted)` : "";
+    const grn = v => +v >= 0.5 ? `color:var(--green)` : `color:var(--muted)`;
+    const red = v => +v >= 0.5 ? `color:var(--red)`   : `color:var(--muted)`;
+
+    return `<tr class="${isBVB?"bvb":""}">
       <td>${i+1}</td>
       <td class="l">${t.name}</td>
       <td>${t.pts}</td>
       <td>${avg}</td>
-      <td>${pct(r[0],N)}%</td>
-      <td><b>${pct(r[1],N)}%</b></td>
-      <td>${pct(top4,N)}%</td>
+      <td style="${grn(p1Pct)}">${p1Pct}%</td>
+      <td style="${grn(clPct)}">${clPct}%</td>
+      <td style="${grn(elPct)}">${elPct}%</td>
+      <td style="${grn(eclPct)}">${eclPct}%</td>
+      <td style="${red(relPct)}">${relPct}%</td>
+      <td style="${red(absPct)}">${absPct}%</td>
     </tr>`;
   }).join("");
 
-  // Vergleichstabelle v1 vs v2
+  // Vergleichstabelle v1 vs v2 – jetzt mit wahrscheinlichstem Platz
   const nV1 = Math.floor(N / 5);
   document.getElementById("compareTbl").innerHTML = TEAMS.slice(0, 10).map((t, i) => {
-    const v1v = pct(rv1[t.abbr]?.[1] ?? 0, nV1);
-    const v2v = pct(rc[t.abbr]?.[1]  ?? 0, N);
-    const d   = (+v2v - +v1v).toFixed(1);
+    const r1  = rv1[t.abbr] || new Int32Array(n);
+    const r2  = rc[t.abbr]  || new Int32Array(n);
+    // Besten Platz je Modell
+    let b1=0, b2=0;
+    for (let k=1; k<n; k++) {
+      if ((r1[k]||0) > (r1[b1]||0)) b1=k;
+      if ((r2[k]||0) > (r2[b2]||0)) b2=k;
+    }
+    const v1v = pct(r1[b1]||0, nV1);
+    const v2v = pct(r2[b2]||0, N);
+    const d   = (b1 - b2); // Platzdifferenz (positiv = v2 besser)
     return `<tr class="${t.abbr==="BVB"?"bvb":""}">
       <td>${i+1}</td>
       <td class="l">${t.name}</td>
-      <td>${v1v}%</td>
-      <td>${v2v}%</td>
-      <td style="color:${+d>0?'var(--green)':+d<0?'var(--red)':'var(--muted)'}">${+d>0?"+":""}${d}</td>
+      <td>P${b1+1} · ${v1v}%</td>
+      <td>P${b2+1} · ${v2v}%</td>
+      <td style="color:${d>0?'var(--green)':d<0?'var(--red)':'var(--muted)'}">${d>0?"+":""}${d===0?"±0":d}</td>
     </tr>`;
   }).join("");
 
   const xgLbl = XG_SRC === "understat" ? "Understat xG" : "xG geschätzt";
-  document.getElementById("noteEl").textContent =
-    `${ms}s · ${N.toLocaleString("de")} Simulationen · OpenLigaDB + ${xgLbl} · ${new Date().toLocaleDateString("de-DE")}`;
+  document.getElementById("noteEl").innerHTML =
+    `${ms}s · ${N.toLocaleString("de")} Simulationen · OpenLigaDB + ${xgLbl} · ${new Date().toLocaleDateString("de-DE")}<br>` +
+    `<span style="color:#555">CL Platz 1–${clMax} · EL Platz ${clMax+1}–${elMax} · ECL Platz ${elMax+1}–${eclMax} · Relegation Platz ${relPl} · Abstieg Platz ${absPl}–${n}</span>`;
 
   document.getElementById("resSection").style.display = "grid";
   document.getElementById("simBtn").disabled = false;
